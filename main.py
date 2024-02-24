@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 import pandas as pd
 import json
 from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
@@ -11,19 +8,15 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import OneHotEncoder
 
-
-
 encoder = OneHotEncoder()
 
 
 # Load JSON data
-with open('csvjson(2).json') as file:
+with open('csvjson.json') as file:
     data = json.load(file)
 
 # Normalize JSON data into a flat table
 df = pd.json_normalize(data)
-
-
 
 # Automatically handle columns with lists
 for column in df.columns:
@@ -165,46 +158,3 @@ predicted_diagnosis = le_y.inverse_transform([predicted_class_index])[0]
 
 # Display the prediction and certainty
 print(f"Predicted Diagnosis: {predicted_diagnosis}, Certainty: {certainty_percentage:.2f}%")
-=======
-=======
->>>>>>> 9b98d0e (fixing file name)
-=======
->>>>>>> 9b98d0e (fixing file name)
-from typing import Union
-
-from fastapi import FastAPI
-from pydantic import BaseModel
-
-app = FastAPI()
-
-
-class Item(BaseModel):
-    name: str
-    price: float
-    is_offer: Union[bool, None] = None
-
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
-
-
-@app.put("/items/{item_id}")
-def update_item(item_id: int, item: Item):
-    return {"item_name": item.name, "item_id": item_id}
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-# uvicorn main:app --reload
->>>>>>> d9f4cc1 (Structuring for api)
-=======
-# uvicorn main:app --reload
->>>>>>> 9b98d0e (fixing file name)
-=======
-# uvicorn main:app --reload
->>>>>>> 9b98d0e (fixing file name)
