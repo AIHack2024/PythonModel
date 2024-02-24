@@ -27,7 +27,7 @@ grid_search = GridSearchCV(RandomForestClassifier(random_state=64), param_grid, 
 
 
 # Load JSON data
-with open('csvjson.json') as file:
+with open('csvjson5K.json') as file:
     data = json.load(file)
 
 # Normalize JSON data into a flat table
@@ -129,43 +129,37 @@ print(f"CV Average Score: {cv_scores.mean()}")
 
 Test_Medical_Record1 = {
     'gender': 'Male',
-    'age': 62,
-    'symptoms': 'diarrhea|bloating|abdominal pain',
+    'age': 52,
+    'blood_type': 'A-',
+    'symptoms': 'abdominal pain|weight loss|bloody diarrhea',
     'systemicManifestations': False,
-    'finalDiagnosis': 'Celiac Disease',
-    'ANA': 'Positive',
-    'Anti-dsDNA': 'Negative',
+    'finalDiagnosis': "Crohn's Disease",
+    'ANA': 'Negative',
+    'Anti-dsDNA': 'Positive',
     'RF': 'Not Tested',
     'CRP': 'Normal',
-    'WBC': 'Normal',
+    'WBC': 'Elevated',
     'RBC': 'Low',
-    'Hemoglobin': 'Normal',
-    'Platelets': 'Elevated',
-    'ESR': 'Elevated',
+    'Hemoglobin': 'Low',
+    'Platelets': 'Normal',
+    'ESR': 'Normal',
     'FVC': 'Reduced',
-    'FEV1': 'Normal',
-    'FEV1/FVC Ratio': 'Normal',
-    'Creatinine': 'Normal',
+    'FEV1': 'Reduced',
+    'FEV1/FVC Ratio': 'Reduced',
+    'Creatinine': 'Elevated',
     'GFR': 'Reduced',
     'C-Peptide': 'Low',
-    'Autoantibodies': 'Not Tested',
+    'Autoantibodies': 'Positive',
     'Fasting Glucose': 'Not Tested',
-    'HbA1c': 'Not Tested',
-    'Anti-CCP': 'Positive',
-    'Blood Type': 'B+',
-    'Blood Pressure': '92/78',
-    'Heart Rate': '69',
-    'Respiratory Rate': '15',
-    'Body Temperature': '37.4',
-    'Oxygen Saturation': '97%',
-    'Cholesterol': '235',
-    'ALT': '27',
-    'AST': '10',
-    'Current Medications': 'None',
-    'X-ray Findings': '',
-    'MRI Findings': '',
-    'Echocardiogram Results': ''
+    'HbA1c': 'Normal',
+    'Anti-CCP': 'Not Tested',
+    'vital_signs_blood_pressure': '91/70',
+    'vital_signs_heart_rate': '',
+    'additional_blood_tests_lipid_profile_HDL': '',
+    'imaging_and_diagnostic_tests': 'CT scan normal',
+    'medication_and_treatment_history': ''
 }
+
 
 
 
