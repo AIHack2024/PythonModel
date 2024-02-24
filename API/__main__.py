@@ -1,5 +1,6 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import pandas as pd
 import json
 from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
@@ -167,6 +168,8 @@ print(f"Predicted Diagnosis: {predicted_diagnosis}, Certainty: {certainty_percen
 =======
 =======
 >>>>>>> 9b98d0e (fixing file name)
+=======
+>>>>>>> 9b98d0e (fixing file name)
 from typing import Union
 
 from fastapi import FastAPI
@@ -196,8 +199,12 @@ def update_item(item_id: int, item: Item):
     return {"item_name": item.name, "item_id": item_id}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 # uvicorn main:app --reload
 >>>>>>> d9f4cc1 (Structuring for api)
+=======
+# uvicorn main:app --reload
+>>>>>>> 9b98d0e (fixing file name)
 =======
 # uvicorn main:app --reload
 >>>>>>> 9b98d0e (fixing file name)

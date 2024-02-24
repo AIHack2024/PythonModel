@@ -1,6 +1,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 __pycache__
 'pycache/*' 
 =======
@@ -13,3 +14,7 @@ __pycache__
 =======
 __pycache__
 >>>>>>> c8810c3 (Fixed files)
+=======
+__pycache__
+'pycache/*' 
+>>>>>>> 9b98d0e (fixing file name)
