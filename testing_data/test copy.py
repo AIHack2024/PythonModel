@@ -8,7 +8,11 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
+<<<<<<< HEAD
 from sklearn.preprocessing import OneHotEncoder
+=======
+
+>>>>>>> 0cd89ec (fixed issue where test data not accepted if not match)
 
 
 
@@ -144,6 +148,7 @@ test_data = pd.DataFrame([Test_Medical_Record1])
 
 # Encode the test data and account for data that may not match the training data
 for column in test_data.columns:
+<<<<<<< HEAD
     if column in label_encoders:
         le = label_encoders[column]
         test_data[column] = test_data[column].apply(lambda x: le.transform([str(x)])[0] if str(x) in le.classes_ else -1)
@@ -151,6 +156,14 @@ for column in test_data.columns:
         
     
 
+=======
+    if column in label_encoders:  # For encoded categorical columns
+        test_data[column] = label_encoders[column].transform(test_data[column].astype(str))
+    elif test_data[column].dtype == 'object':  # For any other string/object type columns not in label_encoders
+        test_data[column] = test_data[column].astype(str)
+        # If any new categorical variable that wasn't in training, handle it here (e.g., set to a default value or encode as 'unknown')
+    
+>>>>>>> 0cd89ec (fixed issue where test data not accepted if not match)
 
 # Predict the diagnosis
 predicted_class_index = rf_Model.predict(test_data)[0]
