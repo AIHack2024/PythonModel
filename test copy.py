@@ -94,71 +94,67 @@ from sklearn.metrics import classification_report
 
 Test_Medical_Record1 = {
     'gender': 'Male',
-    'age': 61,
-    'symptoms': 'eye inflammation|genital ulcers|mouth ulcers',
-    'systemicManifestations': True,
-    'ANA': 'Negative',
-    'Anti-dsDNA': 'Positive',
-    'RF': 'Positive',
+    'age': 62,
+    'symptoms': 'diarrhea|bloating|abdominal pain',
+    'systemicManifestations': False,
+    'ANA': 'Positive',
+    'Anti-dsDNA': 'Negative',
+    'RF': 'Not Tested',
     'CRP': 'Normal',
-    'WBC': 'Elevated',
-    'RBC': 'Normal',
+    'WBC': 'Normal',
+    'RBC': 'Low',
     'Hemoglobin': 'Normal',
     'Platelets': 'Elevated',
     'ESR': 'Elevated',
     'FVC': 'Reduced',
-    'FEV1': 'Reduced',
-    'FEV1/FVC Ratio': 'Reduced',
+    'FEV1': 'Normal',
+    'FEV1/FVC Ratio': 'Normal',
     'Creatinine': 'Normal',
-    'GFR': 'Normal',
+    'GFR': 'Reduced',
     'C-Peptide': 'Low',
-    'Autoantibodies': 'Negative',
+    'Autoantibodies': 'Not Tested',
     'Fasting Glucose': 'Not Tested',
-    'HbA1c': 'Normal',
-    'Anti-CCP': 'Not Tested',
-    'Blood Type': 'A-',
-    'Blood Pressure': '109/87',
-    'Heart Rate': '65',
-    'Respiratory Rate': '16',
-    'Body Temperature': '',
-    'Oxygen Saturation': '',
-    'Cholesterol': '200',
-    'ALT': '36',
-    'AST': '28',
-    'Current Medications': 'Medication A; Dosage: 1 daily',
+    'HbA1c': 'Not Tested',
+    'Anti-CCP': 'Positive',
+    'Blood Type': 'B+',
+    'Blood Pressure': '92/85',
+    'Heart Rate': '69',
+    'Respiratory Rate': '15',
+    'Body Temperature': '37.4',
+    'Oxygen Saturation': '97%',
+    'Cholesterol': '235',
+    'ALT': '27',
+    'AST': '10',
+    'Current Medications': 'None',
     'X-ray Findings': '',
     'MRI Findings': '',
     'Echocardiogram Results': ''
 }
 
-# test the single data point Test_Medical_Record1
-# Convert the data to a DataFrame
-df_test = pd.DataFrame([Test_Medical_Record1])
 
-# Normalize JSON data into a flat table
-df_test = pd.json_normalize(Test_Medical_Record1)
 
-# Automatically handle columns with lists
-for column in df_test.columns:
-    if df_test[column].apply(lambda x: isinstance(x, list)).any():
-        df_test[column] = df_test[column].apply(lambda x: ' '.join(map(str, x)) if isinstance(x, list) else x)
+# Prepare the test data
+test_data = pd.DataFrame([Test_Medical_Record1])
 
-# Encode categorical variables
-label_encoders = {}
-# Convert columns to strings before encoding
-for column in df_test.select_dtypes(include=['object']).columns:
-    if column != 'finalDiagnosis':  # Assuming 'finalDiagnosis' is the target variable
-        # Convert the column to string type
-        df_test[column] = df_test[column].astype(str)  # Ensure all data is string type
+# Handle categorical variables and missing values as done for the training data
+for column in test_data.columns:
+    if column in label_encoders:  # For encoded categorical columns
+        test_data[column] = label_encoders[column].transform(test_data[column].astype(str))
+    elif test_data[column].dtype == 'object':  # For any other string/object type columns not in label_encoders
+        test_data[column] = test_data[column].astype(str)
+        # If any new categorical variable that wasn't in training, handle it here (e.g., set to a default value or encode as 'unknown')
+    # Handle missing values if any
+    # (Assuming no missing values for simplicity, but you might need to fill or handle them as per your dataset's needs)
 
-        le = LabelEncoder()
-        df_test[column] = le.fit_transform(df_test[column])
-        label_encoders[column] = le
-        
-        
-        
-# print out the prediction of the final diagnosis
-print("Predicted Final Diagnosis:", le_y.inverse_transform(rf_Model.predict(df_test)))
+# Predict the diagnosis
+predicted_class_index = rf_Model.predict(test_data)[0]
+predicted_proba = rf_Model.predict_proba(test_data)[0]
 
-# print out the total certainty of the prediction
-print("Certainty of Prediction:", rf_Model.predict_proba(df_test))
+# Get the certainty percentage of the prediction
+certainty_percentage = max(predicted_proba) * 100
+
+# Convert the predicted label back to its original value
+predicted_diagnosis = le_y.inverse_transform([predicted_class_index])[0]
+
+# Display the prediction and certainty
+print(f"Predicted Diagnosis: {predicted_diagnosis}, Certainty: {certainty_percentage:.2f}%")
