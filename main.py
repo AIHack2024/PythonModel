@@ -7,8 +7,23 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import cross_val_score
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import StandardScaler
 
 encoder = OneHotEncoder()
+
+param_grid = {
+    'n_estimators': [100, 200, 300],  # Number of trees
+    'max_depth': [None, 10, 20, 30],  # Maximum depth of the trees
+    'min_samples_split': [2, 5, 10],  # Minimum number of samples required to split an internal node
+    'min_samples_leaf': [1, 2, 4]  # Minimum number of samples required to be at a leaf node
+}
+
+grid_search = GridSearchCV(RandomForestClassifier(random_state=64), param_grid, cv=5, verbose=2, n_jobs=-1)
 
 
 # Load JSON data
@@ -48,32 +63,52 @@ for column in df.select_dtypes(include=['object']).columns:
 X = df.drop('finalDiagnosis', axis=1)  # Replace 'finalDiagnosis' with your actual target column name if different
 y = df['finalDiagnosis']  # Replace 'finalDiagnosis' with your actual target column name if different
 
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+X_scaled_df = pd.DataFrame(X_scaled, columns=X.columns)
+
 # Optionally, encode the target variable if it's categorical
 le_y = LabelEncoder()
 # print the values of the target variable
 y_encoded = le_y.fit_transform(y)
 # print("Target Variable Values:", le_y.classes_)
 
-# Split data into training and test sets
 
-# print results
-# print(X_train.head())
-# print(X_train.info())
-# print(X_train.describe())
-# print("null:", X_train.isnull().sum())
-# print("X Train Shape:", X_train.shape)
-# print("X Test Shape:", X_test.shape)
-# print("Y Train Shape:", y_train.shape)
-# print("Y Test Shape:", y_test.shape)
 
-##########################################################
 
 X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.2, random_state=42)
 
-rf_Model = RandomForestClassifier(n_estimators=100, random_state=64)
+grid_search.fit(X_train, y_train)
+
+# Print the best parameters and use them to create the best model
+print(f"Best parameters found: {grid_search.best_params_}")
+best_model = grid_search.best_estimator_
+
+
+
+# Get feature importances from the model
+feature_importances = best_model.feature_importances_
+
+# Sort the feature importances in descending order and plot
+sorted_idx = np.argsort(feature_importances)[::-1]
+
+# plt.figure(figsize=(10, 7))
+# plt.title("Feature Importances")
+# plt.bar(range(X.shape[1]), feature_importances[sorted_idx], align="center")
+# plt.xticks(range(X.shape[1]), X.columns[sorted_idx], rotation=90)
+# plt.xlim([-1, X.shape[1]])
+# plt.show()
+
+rf_Model = RandomForestClassifier(max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=100 , random_state=64)
 rf_Model.fit(X_train, y_train)
 rf_Model.score(X_test, y_test)
 y_pred = rf_Model.predict(X_test)
+
+cv_scores = cross_val_score(best_model, X, y_encoded, cv=5)
+print(f"CV Average Score: {cv_scores.mean()}")
+
+
 
 # print out the accuracy
 # print("Accuracy:", accuracy_score(y_test, y_pred))
@@ -93,39 +128,40 @@ y_pred = rf_Model.predict(X_test)
 # test the model with specific data
 
 Test_Medical_Record1 = {
-    'gender': 'Female',
-    'age': 22,
-    'symptoms': '',
+    'gender': 'Male',
+    'age': 62,
+    'symptoms': 'diarrhea|bloating|abdominal pain',
     'systemicManifestations': False,
-    'ANA': 'Negative',
-    'Anti-dsDNA': '',
-    'RF': 'Low',
+    'finalDiagnosis': 'Celiac Disease',
+    'ANA': 'Positive',
+    'Anti-dsDNA': 'Negative',
+    'RF': 'Not Tested',
     'CRP': 'Normal',
-    'WBC': 'High',
-    'RBC': 'High',
+    'WBC': 'Normal',
+    'RBC': 'Low',
     'Hemoglobin': 'Normal',
-    'Platelets': '',
-    'ESR': 'Low',
-    'FVC': 'Normal',
+    'Platelets': 'Elevated',
+    'ESR': 'Elevated',
+    'FVC': 'Reduced',
     'FEV1': 'Normal',
-    'FEV1/FVC Ratio': '',
-    'Creatinine': '',
-    'GFR': 'Normal',
-    'C-Peptide': 'High',
-    'Autoantibodies': '',
-    'Fasting Glucose': '',
-    'HbA1c': '',
-    'Anti-CCP': '',
-    'Blood Type': '',
-    'Blood Pressure': '',
-    'Heart Rate': '',
-    'Respiratory Rate': '',
-    'Body Temperature': '',
-    'Oxygen Saturation': '',
-    'Cholesterol': '',
-    'ALT': '',
-    'AST': '',
-    'Current Medications': '',
+    'FEV1/FVC Ratio': 'Normal',
+    'Creatinine': 'Normal',
+    'GFR': 'Reduced',
+    'C-Peptide': 'Low',
+    'Autoantibodies': 'Not Tested',
+    'Fasting Glucose': 'Not Tested',
+    'HbA1c': 'Not Tested',
+    'Anti-CCP': 'Positive',
+    'Blood Type': 'B+',
+    'Blood Pressure': '92/78',
+    'Heart Rate': '69',
+    'Respiratory Rate': '15',
+    'Body Temperature': '37.4',
+    'Oxygen Saturation': '97%',
+    'Cholesterol': '235',
+    'ALT': '27',
+    'AST': '10',
+    'Current Medications': 'None',
     'X-ray Findings': '',
     'MRI Findings': '',
     'Echocardiogram Results': ''
@@ -133,8 +169,11 @@ Test_Medical_Record1 = {
 
 
 
+
 # Prepare the test data
 test_data = pd.DataFrame([Test_Medical_Record1])
+
+
 
 # Encode the test data and account for data that may not match the training data
 for column in test_data.columns:
@@ -144,6 +183,9 @@ for column in test_data.columns:
         
         
     
+# if finalDiagnosis is in the test data, remove it
+if 'finalDiagnosis' in test_data.columns:
+    test_data = test_data.drop('finalDiagnosis', axis=1)
 
 
 # Predict the diagnosis
@@ -158,3 +200,5 @@ predicted_diagnosis = le_y.inverse_transform([predicted_class_index])[0]
 
 # Display the prediction and certainty
 print(f"Predicted Diagnosis: {predicted_diagnosis}, Certainty: {certainty_percentage:.2f}%")
+
+
