@@ -100,7 +100,7 @@ sorted_idx = np.argsort(feature_importances)[::-1]
 # plt.xlim([-1, X.shape[1]])
 # plt.show()
 
-rf_Model = RandomForestClassifier(max_depth=None, min_samples_leaf=1, min_samples_split=2, n_estimators=100 , random_state=64)
+rf_Model = RandomForestClassifier(max_depth=None, min_samples_leaf=1, min_samples_split=5, n_estimators=300 , random_state=1856)
 rf_Model.fit(X_train, y_train)
 rf_Model.score(X_test, y_test)
 y_pred = rf_Model.predict(X_test)
@@ -128,37 +128,38 @@ print(f"CV Average Score: {cv_scores.mean()}")
 # test the model with specific data
 
 Test_Medical_Record1 = {
-    'gender': 'Male',
-    'age': 52,
-    'blood_type': 'A-',
-    'symptoms': 'abdominal pain|weight loss|bloody diarrhea',
+    'gender': 'Female',
+    'age': 78,
+    'blood_type': 'O+',
+    'symptoms': 'fatigue|skin lesions|dry cough',
     'systemicManifestations': False,
-    'finalDiagnosis': "Crohn's Disease",
+    'finalDiagnosis': 'Systemic Lupus Erythematosus (SLE)',
     'ANA': 'Negative',
     'Anti-dsDNA': 'Positive',
     'RF': 'Not Tested',
-    'CRP': 'Normal',
-    'WBC': 'Elevated',
+    'CRP': 'High',
+    'WBC': 'Low',
     'RBC': 'Low',
     'Hemoglobin': 'Low',
-    'Platelets': 'Normal',
-    'ESR': 'Normal',
-    'FVC': 'Reduced',
+    'Platelets': 'Low',
+    'ESR': 'High',
+    'FVC': 'Normal',
     'FEV1': 'Reduced',
     'FEV1/FVC Ratio': 'Reduced',
     'Creatinine': 'Elevated',
-    'GFR': 'Reduced',
-    'C-Peptide': 'Low',
-    'Autoantibodies': 'Positive',
-    'Fasting Glucose': 'Not Tested',
+    'GFR': 'Normal',
+    'C-Peptide': 'Normal',
+    'Autoantibodies': 'Negative',
+    'Fasting Glucose': 'High',
     'HbA1c': 'Normal',
     'Anti-CCP': 'Not Tested',
-    'vital_signs_blood_pressure': '91/70',
-    'vital_signs_heart_rate': '',
+    'vital_signs_blood_pressure': '130/62',
+    'vital_signs_heart_rate': 88,
     'additional_blood_tests_lipid_profile_HDL': '',
-    'imaging_and_diagnostic_tests': 'CT scan normal',
+    'imaging_and_diagnostic_tests': '',
     'medication_and_treatment_history': ''
 }
+
 
 
 
@@ -195,4 +196,29 @@ predicted_diagnosis = le_y.inverse_transform([predicted_class_index])[0]
 # Display the prediction and certainty
 print(f"Predicted Diagnosis: {predicted_diagnosis}, Certainty: {certainty_percentage:.2f}%")
 
+
+# export the model as onnx
+import joblib
+import onnxmltools
+import onnx
+from skl2onnx import convert_sklearn
+from skl2onnx.common.data_types import FloatTensorType
+
+initial_type = [('float_input', FloatTensorType([None, 1]))]
+onx = convert_sklearn(rf_Model, initial_types=initial_type)
+with open("model.onnx", "wb") as f:
+    f.write(onx.SerializeToString())
+    
+# save the model
+
+joblib.dump(rf_Model, 'model.pkl')
+
+# save the label encoders
+joblib.dump(label_encoders, 'label_encoders.pkl')
+joblib.dump(le_y, 'label_encoders_y.pkl')
+joblib.dump(scaler, 'scaler.pkl')
+
+# save the model as onnx
+onnx_model = onnxmltools.convert_sklearn(rf_Model)
+onnxmltools.utils.save_model(onnx_model, 'model.onnx')
 
