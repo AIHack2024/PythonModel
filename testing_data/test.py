@@ -4,7 +4,13 @@ from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import OneHotEncoder
 
+
+
+encoder = OneHotEncoder()
 
 
 # Load JSON data
@@ -50,7 +56,7 @@ y = df['finalDiagnosis']  # Replace 'finalDiagnosis' with your actual target col
 le_y = LabelEncoder()
 # print the values of the target variable
 y_encoded = le_y.fit_transform(y)
-print("Target Variable Values:", le_y.classes_)
+# print("Target Variable Values:", le_y.classes_)
 
 # Split data into training and test sets
 
@@ -76,10 +82,8 @@ y_pred = rf_Model.predict(X_test)
 # print out the accuracy
 # print("Accuracy:", accuracy_score(y_test, y_pred))
 # print out the confusion matrix
-from sklearn.metrics import confusion_matrix
 # print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
 # print out the confusion matrix
-from sklearn.metrics import classification_report
 # print("Classification Report:", classification_report(y_test, y_pred))
 
 # # compare model predictions with actual values
@@ -93,72 +97,68 @@ from sklearn.metrics import classification_report
 # test the model with specific data
 
 Test_Medical_Record1 = {
-    'gender': 'Male',
-    'age': 61,
-    'symptoms': 'eye inflammation|genital ulcers|mouth ulcers',
-    'systemicManifestations': True,
+    'gender': 'Female',
+    'age': 22,
+    'symptoms': '',
+    'systemicManifestations': False,
     'ANA': 'Negative',
-    'Anti-dsDNA': 'Positive',
-    'RF': 'Positive',
+    'Anti-dsDNA': '',
+    'RF': 'Low',
     'CRP': 'Normal',
-    'WBC': 'Elevated',
-    'RBC': 'Normal',
+    'WBC': 'High',
+    'RBC': 'High',
     'Hemoglobin': 'Normal',
-    'Platelets': 'Elevated',
-    'ESR': 'Elevated',
-    'FVC': 'Reduced',
-    'FEV1': 'Reduced',
-    'FEV1/FVC Ratio': 'Reduced',
-    'Creatinine': 'Normal',
+    'Platelets': '',
+    'ESR': 'Low',
+    'FVC': 'Normal',
+    'FEV1': 'Normal',
+    'FEV1/FVC Ratio': '',
+    'Creatinine': '',
     'GFR': 'Normal',
-    'C-Peptide': 'Low',
-    'Autoantibodies': 'Negative',
-    'Fasting Glucose': 'Not Tested',
-    'HbA1c': 'Normal',
-    'Anti-CCP': 'Not Tested',
-    'Blood Type': 'A-',
-    'Blood Pressure': '109/87',
-    'Heart Rate': '65',
-    'Respiratory Rate': '16',
+    'C-Peptide': 'High',
+    'Autoantibodies': '',
+    'Fasting Glucose': '',
+    'HbA1c': '',
+    'Anti-CCP': '',
+    'Blood Type': '',
+    'Blood Pressure': '',
+    'Heart Rate': '',
+    'Respiratory Rate': '',
     'Body Temperature': '',
     'Oxygen Saturation': '',
-    'Cholesterol': '200',
-    'ALT': '36',
-    'AST': '28',
-    'Current Medications': 'Medication A; Dosage: 1 daily',
+    'Cholesterol': '',
+    'ALT': '',
+    'AST': '',
+    'Current Medications': '',
     'X-ray Findings': '',
     'MRI Findings': '',
     'Echocardiogram Results': ''
 }
 
-# test the single data point Test_Medical_Record1
-# Convert the data to a DataFrame
-df_test = pd.DataFrame([Test_Medical_Record1])
 
-# Normalize JSON data into a flat table
-df_test = pd.json_normalize(Test_Medical_Record1)
 
-# Automatically handle columns with lists
-for column in df_test.columns:
-    if df_test[column].apply(lambda x: isinstance(x, list)).any():
-        df_test[column] = df_test[column].apply(lambda x: ' '.join(map(str, x)) if isinstance(x, list) else x)
+# Prepare the test data
+test_data = pd.DataFrame([Test_Medical_Record1])
 
-# Encode categorical variables
-label_encoders = {}
-# Convert columns to strings before encoding
-for column in df_test.select_dtypes(include=['object']).columns:
-    if column != 'finalDiagnosis':  # Assuming 'finalDiagnosis' is the target variable
-        # Convert the column to string type
-        df_test[column] = df_test[column].astype(str)  # Ensure all data is string type
-
-        le = LabelEncoder()
-        df_test[column] = le.fit_transform(df_test[column])
-        label_encoders[column] = le
+# Encode the test data and account for data that may not match the training data
+for column in test_data.columns:
+    if column in label_encoders:
+        le = label_encoders[column]
+        test_data[column] = test_data[column].apply(lambda x: le.transform([str(x)])[0] if str(x) in le.classes_ else -1)
         
         
-        
-# print out the prediction of the final diagnosis
-print("Predicted Final Diagnosis:", le_y.inverse_transform(rf_Model.predict(df_test)))
+    
 
-# print out the total certainty of the prediction
-print("Certainty of Prediction:", rf_Model.predict_proba(df_test))
+
+# Predict the diagnosis
+predicted_class_index = rf_Model.predict(test_data)[0]
+predicted_proba = rf_Model.predict_proba(test_data)[0]
+
+# Get the certainty percentage of the prediction
+certainty_percentage = max(predicted_proba) * 100
+
+# Convert the predicted label back to its original value
+predicted_diagnosis = le_y.inverse_transform([predicted_class_index])[0]
+
+# Display the prediction and certainty
+print(f"Predicted Diagnosis: {predicted_diagnosis}, Certainty: {certainty_percentage:.2f}%")

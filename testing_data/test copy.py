@@ -4,6 +4,9 @@ from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+
 
 
 
@@ -76,10 +79,8 @@ y_pred = rf_Model.predict(X_test)
 # print out the accuracy
 # print("Accuracy:", accuracy_score(y_test, y_pred))
 # print out the confusion matrix
-from sklearn.metrics import confusion_matrix
 # print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
 # print out the confusion matrix
-from sklearn.metrics import classification_report
 # print("Classification Report:", classification_report(y_test, y_pred))
 
 # # compare model predictions with actual values
@@ -143,8 +144,7 @@ for column in test_data.columns:
     elif test_data[column].dtype == 'object':  # For any other string/object type columns not in label_encoders
         test_data[column] = test_data[column].astype(str)
         # If any new categorical variable that wasn't in training, handle it here (e.g., set to a default value or encode as 'unknown')
-    # Handle missing values if any
-    # (Assuming no missing values for simplicity, but you might need to fill or handle them as per your dataset's needs)
+    
 
 # Predict the diagnosis
 predicted_class_index = rf_Model.predict(test_data)[0]
