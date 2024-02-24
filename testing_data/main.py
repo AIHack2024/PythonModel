@@ -8,18 +8,15 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import OneHotEncoder
 
-
-
 encoder = OneHotEncoder()
 
 
 # Load JSON data
-with open('csvjson(2).json') as file:
+with open('csvjson.json') as file:
     data = json.load(file)
 
 # Normalize JSON data into a flat table
 df = pd.json_normalize(data)
-
 
 
 # Automatically handle columns with lists
