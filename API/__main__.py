@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import pandas as pd
 import json
 from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
@@ -164,6 +165,8 @@ predicted_diagnosis = le_y.inverse_transform([predicted_class_index])[0]
 # Display the prediction and certainty
 print(f"Predicted Diagnosis: {predicted_diagnosis}, Certainty: {certainty_percentage:.2f}%")
 =======
+=======
+>>>>>>> 9b98d0e (fixing file name)
 from typing import Union
 
 from fastapi import FastAPI
@@ -192,5 +195,9 @@ def read_item(item_id: int, q: Union[str, None] = None):
 def update_item(item_id: int, item: Item):
     return {"item_name": item.name, "item_id": item_id}
 
+<<<<<<< HEAD
 # uvicorn main:app --reload
 >>>>>>> d9f4cc1 (Structuring for api)
+=======
+# uvicorn main:app --reload
+>>>>>>> 9b98d0e (fixing file name)
