@@ -11,48 +11,43 @@ app = FastAPI()
 class MedicalRecord(BaseModel):
     gender: str
     age: int
+    blood_type: str
     symptoms: str
     systemicManifestations: bool
     ANA: str
-    Anti_dsDNA: str = ''
-    RF: str
+    RF : str
     CRP: str
     WBC: str
     RBC: str
     Hemoglobin: str
-    Platelets: str = ''
+    Platelets: str
     ESR: str
     FVC: str
     FEV1: str
-    FEV1_FVC_Ratio: str = ''
-    Creatinine: str = ''
+    Creatinine: str
     GFR: str
-    C_Peptide: str
-    Autoantibodies: str = ''
-    Fasting_Glucose: str = ''
-    HbA1c: str = ''
-    Anti_CCP: str = ''
-    Blood_Type: str = ''
-    Blood_Pressure: str = ''
-    Heart_Rate: str = ''
-    Respiratory_Rate: str = ''
-    Body_Temperature: str = ''
-    Oxygen_Saturation: str = ''
-    Cholesterol: str = ''
-    ALT: str = ''
-    AST: str = ''
-    Current_Medications: str = ''
-    X_ray_Findings: str = ''
-    MRI_Findings: str = ''
-    Echocardiogram_Results: str = ''
+    Autoantibodies: str
+    HbA1c: str
+    vital_signs_blood_pressure: str
+    vital_signs_heart_rate: int
+    additional_blood_tests_lipid_profile_HDL: str
+    imaging_and_diagnostic_tests: str
+    medication_and_treatment_history: str
+    ANTI_DSDNA: str
+    ANTI_CCP: str
+    C_PEPTIDE: str
+    FASTING_GLUCOSE: str
+    FEV_FVC_RATIO: str
     
+        
 def standardize_feature_names(df):
     # Example transformation: Convert to uppercase and replace underscores with hyphens
     new_columns = {col: col.upper().replace('_', '-') for col in df.columns}
     return df.rename(columns=new_columns)
 
 # Load JSON data
-with open('../csvjson.json') as file:
+with open('csvjson5K.json') as file:
+    print("Loading JSON data...")
     data = json.load(file)
 df = pd.json_normalize(data)
 df = standardize_feature_names(df)
@@ -79,21 +74,49 @@ X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.2,
 rf_Model = RandomForestClassifier(n_estimators=100, random_state=64)
 rf_Model.fit(X_train, y_train)
 
-@app.post("/predict/")
+@app.post("/predict")
 async def predict_diagnosis(record: MedicalRecord):
-    input_data = pd.DataFrame([record.dict()])
-    input_data = standardize_feature_names(input_data)
-
-    # Now, apply any LabelEncoder transformations as before
-    for column in input_data.columns:
+    # predict the diagnosis
+    data = {
+        "GENDER": [record.gender],
+        "AGE": [record.age],
+        "BLOOD-TYPE": [record.blood_type],
+        "SYMPTOMS": [record.symptoms],
+        "SYSTEMIC-MANIFESTATIONS": [record.systemicManifestations],
+        "ANA": [record.ANA],
+        "RF": [record.RF],
+        "CRP": [record.CRP],
+        "WBC": [record.WBC],
+        "RBC": [record.RBC],
+        "HEMOGLOBIN": [record.Hemoglobin],
+        "PLATELETS": [record.Platelets],
+        "ESR": [record.ESR],
+        "FVC": [record.FVC],
+        "FEV1": [record.FEV1],
+        "CREATININE": [record.Creatinine],
+        "GFR": [record.GFR],
+        "AUTOANTIBODIES": [record.Autoantibodies],
+        "HBA1C": [record.HbA1c],
+        "VITAL-SIGNS-BLOOD-PRESSURE": [record.vital_signs_blood_pressure],
+        "VITAL-SIGNS-HEART-RATE": [record.vital_signs_heart_rate],
+        "ADDITIONAL-BLOOD-TESTS-LIPID-PROFILE-HDL": [record.additional_blood_tests_lipid_profile_HDL],
+        "IMAGING-AND-DIAGNOSTIC-TESTS": [record.imaging_and_diagnostic_tests],
+        "MEDICATION-AND-TREATMENT-HISTORY": [record.medication_and_treatment_history],
+        "ANTI-DSDNA": [record.ANTI_DSDNA],
+        "ANTI-CCP": [record.ANTI_CCP],
+        "C-PEPTIDE": [record.C_PEPTIDE],
+        "FASTING-GLUCOSE": [record.FASTING_GLUCOSE],
+        "FEV-FVC-RATIO": [record.FEV_FVC_RATIO]
+    }
+    df = pd.DataFrame(data)
+    df = standardize_feature_names(df)
+    for column in df.columns:
         if column in label_encoders:
-            le = label_encoders[column]
-            input_data[column] = input_data[column].apply(lambda x: le.transform([str(x)])[0] if str(x) in le.classes_ else -1)
-    
+            df[column] = label_encoders[column].transform(df[column])
+    prediction = rf_Model.predict(df)
+    return {"diagnosis": le_y.inverse_transform(prediction)[0]}
 
-    predicted_class_index = rf_Model.predict(input_data)[0]
-    predicted_proba = rf_Model.predict_proba(input_data)[0]
-    certainty_percentage = max(predicted_proba) * 100
-    predicted_diagnosis = le_y.inverse_transform([predicted_class_index])[0]
-    
-    return {"Predicted Diagnosis": predicted_diagnosis, "Certainty": f"{certainty_percentage:.2f}%"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="localhost", port=8000)

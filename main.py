@@ -13,6 +13,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.preprocessing import StandardScaler
+import joblib
+import onnxmltools
+import onnx
+from skl2onnx import convert_sklearn
+from skl2onnx.common.data_types import FloatTensorType
 
 encoder = OneHotEncoder()
 
@@ -198,11 +203,7 @@ print(f"Predicted Diagnosis: {predicted_diagnosis}, Certainty: {certainty_percen
 
 
 # export the model as onnx
-import joblib
-import onnxmltools
-import onnx
-from skl2onnx import convert_sklearn
-from skl2onnx.common.data_types import FloatTensorType
+
 
 initial_type = [('float_input', FloatTensorType([None, 1]))]
 onx = convert_sklearn(rf_Model, initial_types=initial_type)
@@ -218,7 +219,8 @@ joblib.dump(label_encoders, 'label_encoders.pkl')
 joblib.dump(le_y, 'label_encoders_y.pkl')
 joblib.dump(scaler, 'scaler.pkl')
 
-# save the model as onnx
-onnx_model = onnxmltools.convert_sklearn(rf_Model)
+
+# export onnx model 
+onnx_model = onnxmltools.convert_sklearn(rf_Model, initial_types=[('float_input', FloatTensorType([None, 1]))])
 onnxmltools.utils.save_model(onnx_model, 'model.onnx')
 
